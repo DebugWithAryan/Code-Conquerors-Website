@@ -5,7 +5,7 @@ import { gsap } from "gsap";
 import { useGSAP } from '@gsap/react';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 
-gsap.registerPlugin(useGSAP,ScrollTrigger);
+gsap.registerPlugin(useGSAP, ScrollTrigger);
 
 const Work = () => {
 
@@ -13,23 +13,33 @@ const Work = () => {
   const projectsRef = useRef(null);
 
   useGSAP(() => {
-    // Horizontal scroll
-    const projectsWidth = projectsRef.current.scrollWidth;
-    const scrollDistance = projectsWidth - window.innerWidth;
+    const mm = gsap.matchMedia();
 
-    gsap.to(projectsRef.current, {
-      x: -scrollDistance,
-      ease: "linear",
-      scrollTrigger: {
-        trigger: workRef.current,
-        start: "center center",
-        end: () => `+=${projectsWidth}`,
-        pin: true,
-        scrub: 1,
-        anticipatePin: 1, // prevents flicker on fast scroll
-        invalidateOnRefresh: true,
-      },
+    mm.add("(min-width: 1024px)", () => {
+      const projectsWidth = projectsRef.current.scrollWidth;
+      const scrollDistance = projectsWidth - window.innerWidth;
+
+      const tween = gsap.to(projectsRef.current, {
+        x: -scrollDistance,
+        ease: "linear",
+        scrollTrigger: {
+          trigger: workRef.current,
+          start: "center center",
+          end: () => `+=${projectsWidth}`,
+          pin: true,
+          scrub: 1,
+          anticipatePin: 1,
+          invalidateOnRefresh: true,
+        },
+      });
+
+      return () => {
+        tween?.scrollTrigger?.kill();
+        tween?.kill();
+      };
     });
+
+    return () => mm.revert();
   }, { scope: workRef });
 
 
@@ -45,13 +55,13 @@ const Work = () => {
           </div>
           <GradientButton text="Explore All" link="/projects" className="btn-light" />
         </div>
-        <div ref={projectsRef}>
+        <div ref={projectsRef} className='lg:overflow-visible overflow-x-auto overflow-y-hidden'>
           {/* Projects */}
-          <div className='flex gap-4 lg:gap-8 ms-4 lg:ms-[40%] mt-6'>
+          <div className='flex gap-4 lg:gap-8 ps-4 lg:ps-[40%] mt-6'>
             {projects.map(({ id, name, image }) => (
               <div
                 key={id}
-                className="relative rounded-2xl w-full min-w-[340px] lg:min-w-xl h-72 lg:h-96 overflow-hidden group"
+                className="relative rounded-2xl w-full min-w-[80vw] sm:min-w-[300px] lg:min-w-xl h-64 md:h-72 lg:h-96 overflow-hidden group flex-shrink-0"
               >
                 {/* Project Image */}
                 <img
